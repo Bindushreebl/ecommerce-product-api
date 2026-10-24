@@ -1,18 +1,26 @@
 
+import os
 import sqlite3
 
-DATABASE_NAME = "ecommerce.db"
+DEFAULT_DATABASE = "ecommerce.db"
 
 
-def get_connection():
-    connection = sqlite3.connect(DATABASE_NAME)
+def get_db_path(db_path=None):
+    if db_path:
+        return db_path
+    return os.environ.get("DATABASE_PATH", DEFAULT_DATABASE)
+
+
+def get_connection(db_path=None):
+    target_db = get_db_path(db_path)
+    connection = sqlite3.connect(target_db)
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys = ON")
     return connection
 
 
-def init_db():
-    connection = get_connection()
+def init_db(db_path=None):
+    connection = get_connection(db_path)
 
     try:
         connection.execute("""
@@ -36,6 +44,14 @@ def init_db():
             )
         """)
 
+        connection.execute("""
+            CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id)
+        """)
+
+        connection.execute("""
+            CREATE INDEX IF NOT EXISTS idx_products_name ON products(name)
+        """)
+
         connection.commit()
         print("Database tables created successfully!")
 
@@ -45,3 +61,4 @@ def init_db():
 
 if __name__ == "__main__":
     init_db()
+

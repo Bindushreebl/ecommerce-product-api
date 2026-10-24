@@ -1,0 +1,453 @@
+{
+  "basePath": "/",
+  "consumes": [
+    "application/json"
+  ],
+  "definitions": {},
+  "info": {
+    "contact": {
+      "name": "API Support",
+      "url": "https://github.com/Bindushreebl/ecommerce-product-api"
+    },
+    "description": "Production-ready RESTful API for managing e-commerce products and categories. Built with Flask, SQLite, and Flasgger.",
+    "title": "E-commerce Product REST API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "description": "Returns welcome message, API version, and links to all primary endpoints and documentation.",
+        "responses": {
+          "200": {
+            "description": "API metadata and navigation links"
+          }
+        },
+        "summary": "API Welcome and Discovery",
+        "tags": [
+          "General"
+        ]
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "description": "Retrieves all product categories along with associated product counts.",
+        "responses": {
+          "200": {
+            "description": "Categories retrieved successfully"
+          }
+        },
+        "summary": "List all categories",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "post": {
+        "description": "Creates a unique product category.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "name": {
+                  "example": "Home & Kitchen",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Category created successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "409": {
+            "description": "Category already exists"
+          }
+        },
+        "summary": "Create a new category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/api/categories/{category_id}": {
+      "delete": {
+        "description": "Deletes an empty category. Deletion will be rejected if products are assigned to this category.",
+        "responses": {
+          "200": {
+            "description": "Category deleted successfully"
+          },
+          "404": {
+            "description": "Category not found"
+          },
+          "409": {
+            "description": "Cannot delete category with associated products"
+          }
+        },
+        "summary": "Delete a category",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "get": {
+        "description": "Retrieves details of a single category and its product count.",
+        "responses": {
+          "200": {
+            "description": "Category retrieved successfully"
+          },
+          "404": {
+            "description": "Category not found"
+          }
+        },
+        "summary": "Get category by ID",
+        "tags": [
+          "Categories"
+        ]
+      },
+      "parameters": [
+        {
+          "description": "ID of the category",
+          "in": "path",
+          "name": "category_id",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "put": {
+        "description": "Updates category name. Name must remain unique.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "name": {
+                  "example": "Home Decor & Kitchen",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category updated successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Category not found"
+          },
+          "409": {
+            "description": "Category name already exists"
+          }
+        },
+        "summary": "Update a category",
+        "tags": [
+          "Categories"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "description": "Returns the operational health status and database connectivity.",
+        "responses": {
+          "200": {
+            "description": "API and database are healthy"
+          },
+          "500": {
+            "description": "Database connection error"
+          }
+        },
+        "summary": "Health Check",
+        "tags": [
+          "General"
+        ]
+      }
+    },
+    "/api/products": {
+      "get": {
+        "description": "Retrieves products with optional filtering by search keyword, category, price range, and sorting.",
+        "parameters": [
+          {
+            "description": "Filter products by matching name or description",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "Filter products by category ID",
+            "in": "query",
+            "name": "category_id",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "Minimum product price",
+            "in": "query",
+            "name": "min_price",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "description": "Maximum product price",
+            "in": "query",
+            "name": "max_price",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "description": "Sort order for products",
+            "enum": [
+              "id_asc",
+              "id_desc",
+              "price_asc",
+              "price_desc",
+              "name_asc",
+              "name_desc"
+            ],
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products retrieved successfully"
+          },
+          "400": {
+            "description": "Invalid query parameters"
+          }
+        },
+        "summary": "List all products",
+        "tags": [
+          "Products"
+        ]
+      },
+      "post": {
+        "description": "Creates a new product linked to an existing category.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "category_id": {
+                  "example": 1,
+                  "type": "integer"
+                },
+                "description": {
+                  "example": "Ergonomic 2.4GHz optical mouse",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Wireless Mouse",
+                  "type": "string"
+                },
+                "price": {
+                  "example": 29.99,
+                  "type": "number"
+                },
+                "stock": {
+                  "example": 50,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "name",
+                "price",
+                "category_id"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Product created successfully"
+          },
+          "400": {
+            "description": "Validation error or invalid category"
+          }
+        },
+        "summary": "Create a new product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/products/{product_id}": {
+      "delete": {
+        "description": "Deletes the specified product from the catalog.",
+        "responses": {
+          "200": {
+            "description": "Product deleted successfully"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "summary": "Delete a product",
+        "tags": [
+          "Products"
+        ]
+      },
+      "get": {
+        "description": "Retrieves complete details of a product including its category name.",
+        "responses": {
+          "200": {
+            "description": "Product retrieved successfully"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "summary": "Get product by ID",
+        "tags": [
+          "Products"
+        ]
+      },
+      "parameters": [
+        {
+          "description": "ID of the product",
+          "in": "path",
+          "name": "product_id",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "patch": {
+        "description": "Updates only specified fields of a product (e.g. price, stock, name).",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "category_id": {
+                  "example": 1,
+                  "type": "integer"
+                },
+                "description": {
+                  "example": "Updated description",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Wireless Mouse Pro",
+                  "type": "string"
+                },
+                "price": {
+                  "example": 27.99,
+                  "type": "number"
+                },
+                "stock": {
+                  "example": 65,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product updated successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "summary": "Partially update a product",
+        "tags": [
+          "Products"
+        ]
+      },
+      "put": {
+        "description": "Replaces all product attributes. Requires name, price, stock, and category_id.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "properties": {
+                "category_id": {
+                  "example": 1,
+                  "type": "integer"
+                },
+                "description": {
+                  "example": "Upgraded rechargeable wireless mouse",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Wireless Mouse Pro",
+                  "type": "string"
+                },
+                "price": {
+                  "example": 34.99,
+                  "type": "number"
+                },
+                "stock": {
+                  "example": 40,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "name",
+                "price",
+                "stock",
+                "category_id"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product updated successfully"
+          },
+          "400": {
+            "description": "Validation error or category not found"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        },
+        "summary": "Update a product (full replacement)",
+        "tags": [
+          "Products"
+        ]
+      }
+    }
+  },
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0"
+}
