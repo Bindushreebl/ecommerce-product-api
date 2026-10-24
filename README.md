@@ -313,3 +313,6 @@ python -c "import os, json; from app import app; client = app.test_client(); res
 This project is licensed under the MIT License.
 
 https://ecommerce-product-api-1-bcqx.onrender.com
+
+http://127.0.0.1:5000/
+
