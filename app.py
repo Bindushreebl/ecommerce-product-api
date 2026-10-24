@@ -5,9 +5,218 @@ from database import init_db, get_connection
 
 app = Flask(__name__)
 
-Swagger(app)
+# ---------------- SWAGGER DOCUMENTATION ----------------
 
+swagger_template = {
+    "swagger": "2.0",
+    "info": {
+        "title": "E-commerce Product REST API",
+        "description": "REST API for managing products and categories",
+        "version": "1.0.0"
+    },
+    "basePath": "/",
+    "schemes": ["https", "http"],
+    "paths": {
+        "/": {
+            "get": {
+                "tags": ["Home"],
+                "summary": "API welcome message",
+                "responses": {
+                    "200": {"description": "API information"}
+                }
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": ["Products"],
+                "summary": "Get all products",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "type": "string",
+                        "required": False,
+                        "description": "Search products by name"
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "type": "integer",
+                        "required": False,
+                        "description": "Filter by category ID"
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Products retrieved successfully"},
+                    "400": {"description": "Invalid category ID"}
+                }
+            },
+            "post": {
+                "tags": ["Products"],
+                "summary": "Create a product",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["name", "price", "category_id"],
+                            "properties": {
+                                "name": {"type": "string", "example": "Wireless Mouse"},
+                                "description": {"type": "string", "example": "Test product"},
+                                "price": {"type": "number", "example": 599},
+                                "stock": {"type": "integer", "example": 10},
+                                "category_id": {"type": "integer", "example": 1}
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {"description": "Product created successfully"},
+                    "400": {"description": "Invalid input or category"}
+                }
+            }
+        },
+        "/api/products/{product_id}": {
+            "parameters": [
+                {
+                    "name": "product_id",
+                    "in": "path",
+                    "type": "integer",
+                    "required": True,
+                    "description": "Product ID"
+                }
+            ],
+            "get": {
+                "tags": ["Products"],
+                "summary": "Get a product by ID",
+                "responses": {
+                    "200": {"description": "Product retrieved successfully"},
+                    "404": {"description": "Product not found"}
+                }
+            },
+            "put": {
+                "tags": ["Products"],
+                "summary": "Update a product",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["name", "price", "stock", "category_id"],
+                            "properties": {
+                                "name": {"type": "string", "example": "Wireless Mouse"},
+                                "description": {"type": "string", "example": "Updated description"},
+                                "price": {"type": "number", "example": 699},
+                                "stock": {"type": "integer", "example": 15},
+                                "category_id": {"type": "integer", "example": 1}
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Product updated successfully"},
+                    "400": {"description": "Invalid input"},
+                    "404": {"description": "Product not found"}
+                }
+            },
+            "delete": {
+                "tags": ["Products"],
+                "summary": "Delete a product",
+                "responses": {
+                    "200": {"description": "Product deleted successfully"},
+                    "404": {"description": "Product not found"}
+                }
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": ["Categories"],
+                "summary": "Get all categories",
+                "responses": {
+                    "200": {"description": "Categories retrieved successfully"}
+                }
+            },
+            "post": {
+                "tags": ["Categories"],
+                "summary": "Create a category",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                                "name": {"type": "string", "example": "Electronics"}
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {"description": "Category created successfully"},
+                    "400": {"description": "Invalid input"},
+                    "409": {"description": "Category already exists"}
+                }
+            }
+        },
+        "/api/categories/{category_id}": {
+            "parameters": [
+                {
+                    "name": "category_id",
+                    "in": "path",
+                    "type": "integer",
+                    "required": True,
+                    "description": "Category ID"
+                }
+            ],
+            "put": {
+                "tags": ["Categories"],
+                "summary": "Update a category",
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "required": True,
+                        "schema": {
+                            "type": "object",
+                            "required": ["name"],
+                            "properties": {
+                                "name": {"type": "string", "example": "Accessories"}
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {"description": "Category updated successfully"},
+                    "404": {"description": "Category not found"},
+                    "409": {"description": "Category name already exists"}
+                }
+            },
+            "delete": {
+                "tags": ["Categories"],
+                "summary": "Delete a category",
+                "responses": {
+                    "200": {"description": "Category deleted successfully"},
+                    "404": {"description": "Category not found"},
+                    "409": {"description": "Category contains products"}
+                }
+            }
+        }
+    }
+}
+
+Swagger(app, template=swagger_template)
+
+# Initialize database tables
 init_db()
+
+
+# ---------------- HOME ----------------
 
 @app.route("/", methods=["GET"])
 def home():
@@ -16,7 +225,7 @@ def home():
         "endpoints": {
             "products": "/api/products",
             "categories": "/api/categories",
-            "documentation": "/apidocs"
+            "documentation": "/apidocs/"
         }
     })
 
@@ -310,5 +519,4 @@ def delete_category(category_id):
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
