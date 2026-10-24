@@ -379,6 +379,12 @@ Swagger(app, config=swagger_config, template=swagger_template)
 
 # Initialize database tables on startup
 init_db()
+try:
+    from seed import seed_database
+    seed_database()
+except Exception:
+    pass
+
 
 
 # ---------------- ERROR HANDLERS (JSON ONLY) ----------------

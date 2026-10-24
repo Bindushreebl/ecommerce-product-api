@@ -8,7 +8,10 @@ DEFAULT_DATABASE = "ecommerce.db"
 def get_db_path(db_path=None):
     if db_path:
         return db_path
+    if "VERCEL" in os.environ or "AWS_LAMBDA_FUNCTION_NAME" in os.environ:
+        return os.environ.get("DATABASE_PATH", "/tmp/ecommerce.db")
     return os.environ.get("DATABASE_PATH", DEFAULT_DATABASE)
+
 
 
 def get_connection(db_path=None):
