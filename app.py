@@ -4,8 +4,10 @@ from flasgger import Swagger
 from database import init_db, get_connection
 
 app = Flask(__name__)
+
 Swagger(app)
 
+init_db()
 
 @app.route("/", methods=["GET"])
 def home():
