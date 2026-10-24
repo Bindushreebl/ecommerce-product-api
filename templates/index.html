@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-commerce Product REST API | Interactive Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --bg-card-hover: rgba(30, 41, 59, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(16, 185, 129, 0.5);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-green: #10b981;
+      --accent-green-glow: rgba(16, 185, 129, 0.25);
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-orange: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-cyan: #06b6d4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 10% 20%, #111827 0%, var(--bg-dark) 90%);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Glow */
+    .glow-sphere {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      top: -100px;
+      left: 10%;
+    }
+
+    .glow-sphere-2 {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      bottom: -150px;
+      right: 5%;
+    }
+
+    /* Navigation Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+    }
+
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      text-decoration: none;
+      color: white;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: #0b0f19;
+      box-shadow: 0 0 20px var(--accent-green-glow);
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-green);
+      font-size: 0.72rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-weight: 600;
+      margin-left: 0.35rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--accent-green);
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-green), #059669);
+      color: #0b0f19;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      backdrop-filter: blur(8px);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+    .stat-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+    .stat-icon.purple { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+    .stat-icon.cyan { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    /* Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.85rem 1.4rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text-main); }
+    .tab-btn.active {
+      color: var(--accent-green);
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      background: var(--bg-card);
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.65rem 1rem 0.65rem 2.4rem;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .search-input:focus {
+      border-color: var(--accent-green);
+    }
+    .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .filter-select {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Product Cards Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .product-category-tag {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.1);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      font-weight: 600;
+      align-self: flex-start;
+      margin-bottom: 0.65rem;
+    }
+
+    .product-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      line-height: 1.35;
+    }
+
+    .product-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 1.1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex-grow: 1;
+    }
+
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .product-price {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent-green);
+    }
+
+    .product-stock {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .product-stock.in-stock { color: #10b981; }
+    .product-stock.low-stock { color: #f59e0b; }
+
+    .product-actions {
+      display: flex;
+      gap: 0.45rem;
+    }
+
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-icon:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+    }
+    .btn-icon.delete:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--accent-red);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    /* API Explorer Tab */
+    .explorer-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 960px) {
+      .explorer-layout { grid-template-columns: 1fr; }
+    }
+
+    .endpoint-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.1rem;
+      margin-bottom: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .endpoint-card:hover, .endpoint-card.active {
+      border-color: var(--accent-cyan);
+      background: var(--bg-card-hover);
+      transform: translateX(4px);
+    }
+
+    .endpoint-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .method-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      min-width: 60px;
+      text-align: center;
+    }
+    .method-badge.GET { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+    .method-badge.POST { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+    .method-badge.PUT { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+    .method-badge.PATCH { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+    .method-badge.DELETE { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .endpoint-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .console-panel {
+      background: #070a13;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 5rem;
+      height: fit-content;
+      max-height: calc(100vh - 8rem);
+    }
+
+    .console-header {
+      background: #0d121f;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .console-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .console-body {
+      padding: 1.25rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .code-preview {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #38bdf8;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal-card {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      padding: 1.75rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .form-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.65rem 0.9rem;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--accent-green); }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #1e293b;
+      border-left: 4px solid var(--accent-green);
+      color: white;
+      padding: 0.85rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      z-index: 300;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.error {
+      border-left-color: var(--accent-red);
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-sphere"></div>
+  <div class="glow-sphere-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <div class="brand-logo">⚡</div>
+        <div>
+          <div class="brand-title">E-commerce Product REST API <span class="brand-badge">v1.0.0</span></div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">Flask 3.1 &bull; SQLite 3 &bull; OpenAPI</div>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span id="health-status">Online (127.0.0.1:5000)</span>
+        </div>
+        <a href="/apidocs/" target="_blank" class="btn btn-secondary">
+          <span>📖 Swagger UI</span>
+        </a>
+        <a href="https://github.com/Bindushreebl/ecommerce-product-api" target="_blank" class="btn btn-secondary">
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Quick Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon green">📦</div>
+        <div>
+          <div class="stat-label">Total Products</div>
+          <div class="stat-value" id="stat-products">--</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">🏷️</div>
+        <div>
+          <div class="stat-label">Categories</div>
+          <div class="stat-value" id="stat-categories">--</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">✨</div>
+        <div>
+          <div class="stat-label">Inventory Units</div>
+          <div class="stat-value" id="stat-stock">--</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cyan">🛡️</div>
+        <div>
+          <div class="stat-label">Database Health</div>
+          <div class="stat-value" id="stat-db">Connected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('catalog')">🛍️ Live Product Catalog</button>
+      <button class="tab-btn" onclick="switchTab('categories')">🏷️ Categories</button>
+      <button class="tab-btn" onclick="switchTab('explorer')">⚡ Interactive API Explorer</button>
+    </div>
+
+    <!-- TAB 1: PRODUCT CATALOG -->
+    <div id="tab-catalog" class="tab-content active">
+      <div class="controls-bar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-box" class="search-input" placeholder="Search products by title or description..." oninput="handleSearch()">
+        </div>
+
+        <select id="category-filter" class="filter-select" onchange="loadProducts()">
+          <option value="">All Categories</option>
+        </select>
+
+        <select id="sort-select" class="filter-select" onchange="loadProducts()">
+          <option value="id_asc">Default (ID: Low to High)</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="name_asc">Name: A to Z</option>
+          <option value="name_desc">Name: Z to A</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="openAddProductModal()">
+          <span>+ Add Product</span>
+        </button>
+      </div>
+
+      <div class="products-grid" id="products-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB 2: CATEGORIES -->
+    <div id="tab-categories" class="tab-content">
+      <div class="controls-bar">
+        <div>
+          <h3 style="font-size: 1.1rem; font-weight: 700;">Catalog Categories</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">Manage classifications and foreign key relationships</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddCategoryModal()">
+          <span>+ Add Category</span>
+        </button>
+      </div>
+
+      <div class="products-grid" id="categories-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB 3: INTERACTIVE API EXPLORER -->
+    <div id="tab-explorer" class="tab-content">
+      <div class="explorer-layout">
+        <div>
+          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.35rem;">CRUD Endpoints Reference</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.25rem;">Select any endpoint below to test and inspect the live JSON payload.</p>
+
+          <div class="endpoint-card active" onclick="selectEndpoint('GET', '/api/products', 'List all products with query parameters')">
+            <div class="endpoint-left">
+              <span class="method-badge GET">GET</span>
+              <div>
+                <div class="endpoint-path">/api/products</div>
+                <div class="endpoint-desc">List products (search, filter, sort)</div>
+              </div>
+            </div>
+            <span>&rarr;</span>
+          </div>
+
+          <div class="endpoint-card" onclick="selectEndpoint('GET', '/api/products/1', 'Get single product details')">
+            <div class="endpoint-left">
+              <span class="method-badge GET">GET</span>
+              <div>
+                <div class="endpoint-path">/api/products/{id}</div>
+                <div class="endpoint-desc">Retrieve single product by ID</div>
+              </div>
+            </div>
+            <span>&rarr;</span>
+          </div>
+
+          <div class="endpoint-card" onclick="selectEndpoint('POST', '/api/products', 'Create product with validation', '{\n  \"name\": \"Smart Fitness Tracker\",\n  \"description\": \"OLED waterproof fitness band with heart-rate sensor\",\n  \"price\": 49.99,\n  \"stock\": 50,\n  \"category_id\": 1\n}')">
+            <div class="endpoint-left">
+              <span class="method-badge POST">POST</span>
+              <div>
+                <div class="endpoint-path">/api/products</div>
+                <div class="endpoint-desc">Create a new product</div>
+              </div>
+            </div>
+            <span>&rarr;</span>
+          </div>
+
+          <div class="endpoint-card" onclick="selectEndpoint('PATCH', '/api/products/1', 'Partially update product price/stock', '{\n  \"price\": 119.99,\n  \"stock\": 35\n}')">
+            <div class="endpoint-left">
+              <span class="method-badge PATCH">PATCH</span>
+              <div>
+                <div class="endpoint-path">/api/products/{id}</div>
+                <div class="endpoint-desc">Partial update of product attributes</div>
+              </div>
+            </div>
+            <span>&rarr;</span>
+          </div>
+
+          <div class="endpoint-card" onclick="selectEndpoint('GET', '/api/categories', 'List all categories with product counts')">
+            <div class="endpoint-left">
+              <span class="method-badge GET">GET</span>
+              <div>
+                <div class="endpoint-path">/api/categories</div>
+                <div class="endpoint-desc">List all categories</div>
+              </div>
+            </div>
+            <span>&rarr;</span>
+          </div>
+
+          <div class="endpoint-card" onclick="selectEndpoint('GET', '/api/health', 'System health check')">
+            <div class="endpoint-left">
+              <span class="method-badge GET">GET</span>
+              <div>
+                <div class="endpoint-path">/api/health</div>
+                <div class="endpoint-desc">Liveness & SQLite connectivity</div>
+              </div>
+            </div>
+            <span>&rarr;</span>
+          </div>
+        </div>
+
+        <!-- Live Console -->
+        <div class="console-panel">
+          <div class="console-header">
+            <span class="console-title" id="console-endpoint-title">GET /api/products</span>
+            <button class="btn btn-primary" style="padding: 0.35rem 0.85rem; font-size: 0.78rem;" onclick="executeExplorerRequest()">
+              ▶ Send Request
+            </button>
+          </div>
+          <div class="console-body">
+            <div id="request-body-section" style="display: none; margin-bottom: 1rem;">
+              <div class="form-label">Request Body (JSON):</div>
+              <textarea id="explorer-req-body" class="form-input" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; height: 110px;"></textarea>
+            </div>
+            <div class="form-label">Response Status: <span id="response-status-badge" style="color: var(--accent-green);">200 OK</span> <span id="response-time" style="color: var(--text-muted); font-size: 0.75rem; margin-left: 0.5rem;">(24ms)</span></div>
+            <pre class="code-preview" id="console-output">// Click "Send Request" to test endpoint...</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Product Modal -->
+  <div class="modal-overlay" id="product-modal">
+    <div class="modal-card">
+      <h3 class="modal-title">Create New Product</h3>
+      <form onsubmit="submitProductForm(event)">
+        <div class="form-group">
+          <label class="form-label">Product Name *</label>
+          <input type="text" id="prod-name" class="form-input" placeholder="e.g. Ergonomic Keyboard" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="prod-desc" class="form-input" style="height: 70px;" placeholder="Detailed product overview..."></textarea>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label class="form-label">Price ($) *</label>
+            <input type="number" id="prod-price" class="form-input" step="0.01" min="0" placeholder="29.99" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock Quantity</label>
+            <input type="number" id="prod-stock" class="form-input" min="0" value="10">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select id="prod-category" class="form-input" required></select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('product-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Category Modal -->
+  <div class="modal-overlay" id="category-modal">
+    <div class="modal-card">
+      <h3 class="modal-title">Create New Category</h3>
+      <form onsubmit="submitCategoryForm(event)">
+        <div class="form-group">
+          <label class="form-label">Category Name *</label>
+          <input type="text" id="cat-name" class="form-input" placeholder="e.g. Musical Instruments" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('category-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Operation successful!</div>
+
+  <footer>
+    E-commerce Product REST API &bull; Built with Python & Flask &bull; SQLite Relational Engine &bull; OpenAPI Documentation
+  </footer>
+
+  <script>
+    let activeMethod = 'GET';
+    let activePath = '/api/products';
+    let activeBody = '';
+    let categoriesCache = [];
+
+    // Switch tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+
+      if (tabId === 'categories') loadCategoriesTab();
+      if (tabId === 'explorer') executeExplorerRequest();
+    }
+
+    // Toast notification
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show' + (isError ? ' error' : '');
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    // Modals
+    function openAddProductModal() {
+      populateCategorySelect();
+      document.getElementById('product-modal').classList.add('active');
+    }
+    function openAddCategoryModal() {
+      document.getElementById('cat-name').value = '';
+      document.getElementById('category-modal').classList.add('active');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    // Populate category dropdown
+    function populateCategorySelect() {
+      const sel = document.getElementById('prod-category');
+      sel.innerHTML = categoriesCache.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
+    // Load initial data
+    async function init() {
+      try {
+        await loadCategories();
+        await loadProducts();
+        checkHealth();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function checkHealth() {
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        if (data.status === 'healthy') {
+          document.getElementById('stat-db').textContent = 'Connected';
+          document.getElementById('health-status').textContent = 'Online (Port 5000)';
+        }
+      } catch (e) {
+        document.getElementById('stat-db').textContent = 'Offline';
+        document.getElementById('health-status').textContent = 'Disconnected';
+      }
+    }
+
+    // Load categories
+    async function loadCategories() {
+      const res = await fetch('/api/categories');
+      categoriesCache = await res.json();
+      document.getElementById('stat-categories').textContent = categoriesCache.length;
+
+      // Update category filter dropdown
+      const filterSelect = document.getElementById('category-filter');
+      filterSelect.innerHTML = '<option value="">All Categories</option>' +
+        categoriesCache.map(c => `<option value="${c.id}">${c.name} (${c.product_count})</option>`).join('');
+    }
+
+    // Load and render products
+    async function loadProducts() {
+      const search = document.getElementById('search-box').value.trim();
+      const catId = document.getElementById('category-filter').value;
+      const sort = document.getElementById('sort-select').value;
+
+      let url = `/api/products?sort=${sort}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (catId) url += `&category_id=${catId}`;
+
+      const res = await fetch(url);
+      const products = await res.json();
+
+      document.getElementById('stat-products').textContent = products.length;
+      const totalStock = products.reduce((acc, p) => acc + (p.stock || 0), 0);
+      document.getElementById('stat-stock').textContent = totalStock;
+
+      const container = document.getElementById('products-container');
+      if (products.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
+          No products found matching your filters.
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = products.map(p => `
+        <div class="product-card">
+          <span class="product-category-tag">${p.category_name || 'General'}</span>
+          <h4 class="product-name">${escapeHtml(p.name)}</h4>
+          <p class="product-desc">${escapeHtml(p.description || 'No description provided.')}</p>
+          <div class="product-footer">
+            <div>
+              <div class="product-price">$${Number(p.price).toFixed(2)}</div>
+              <div class="product-stock ${p.stock > 10 ? 'in-stock' : 'low-stock'}">
+                ● ${p.stock} units available
+              </div>
+            </div>
+            <div class="product-actions">
+              <button class="btn-icon" title="Quick Edit Price" onclick="quickEditProduct(${p.id}, ${p.price}, ${p.stock})">✏️</button>
+              <button class="btn-icon delete" title="Delete Product" onclick="deleteProduct(${p.id})">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function handleSearch() {
+      clearTimeout(window.searchTimeout);
+      window.searchTimeout = setTimeout(loadProducts, 250);
+    }
+
+    // Quick Edit Product
+    async function quickEditProduct(id, currentPrice, currentStock) {
+      const newPrice = prompt("Enter new price ($):", currentPrice);
+      if (newPrice === null) return;
+
+      const numPrice = parseFloat(newPrice);
+      if (isNaN(numPrice) || numPrice < 0) {
+        alert("Invalid price!");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/products/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price: numPrice })
+        });
+        if (res.ok) {
+          showToast("Product price updated successfully!");
+          loadProducts();
+        } else {
+          const err = await res.json();
+          showToast(err.error || "Update failed", true);
+        }
+      } catch (e) {
+        showToast("Network error", true);
+      }
+    }
+
+    // Delete Product
+    async function deleteProduct(id) {
+      if (!confirm("Are you sure you want to delete this product?")) return;
+
+      try {
+        const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast("Product deleted successfully!");
+          loadProducts();
+          loadCategories();
+        } else {
+          showToast("Could not delete product", true);
+        }
+      } catch (e) {
+        showToast("Network error", true);
+      }
+    }
+
+    // Submit New Product
+    async function submitProductForm(e) {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('prod-name').value.trim(),
+        description: document.getElementById('prod-desc').value.trim(),
+        price: parseFloat(document.getElementById('prod-price').value),
+        stock: parseInt(document.getElementById('prod-stock').value) || 0,
+        category_id: parseInt(document.getElementById('prod-category').value)
+      };
+
+      try {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast("Product created successfully!");
+          closeModal('product-modal');
+          loadProducts();
+          loadCategories();
+        } else {
+          const err = await res.json();
+          showToast(err.error || "Creation failed", true);
+        }
+      } catch (e) {
+        showToast("Network error", true);
+      }
+    }
+
+    // Load Categories Tab
+    async function loadCategoriesTab() {
+      await loadCategories();
+      const container = document.getElementById('categories-container');
+      container.innerHTML = categoriesCache.map(c => `
+        <div class="product-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span class="product-category-tag">ID: #${c.id}</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">${c.product_count} products assigned</span>
+          </div>
+          <h4 class="product-name" style="font-size: 1.25rem;">${escapeHtml(c.name)}</h4>
+          <div class="product-footer">
+            <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;" onclick="filterByCategoryTab(${c.id})">
+              View Items
+            </button>
+            <button class="btn-icon delete" title="Delete Category" onclick="deleteCategory(${c.id})">🗑️</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterByCategoryTab(catId) {
+      document.getElementById('category-filter').value = catId;
+      switchTab('catalog');
+      loadProducts();
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm("Are you sure you want to delete this category?")) return;
+      try {
+        const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast("Category deleted successfully!");
+          loadCategoriesTab();
+        } else {
+          const err = await res.json();
+          showToast(err.error || "Cannot delete category", true);
+        }
+      } catch (e) {
+        showToast("Network error", true);
+      }
+    }
+
+    async function submitCategoryForm(e) {
+      e.preventDefault();
+      const name = document.getElementById('cat-name').value.trim();
+      try {
+        const res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        if (res.ok) {
+          showToast("Category created successfully!");
+          closeModal('category-modal');
+          loadCategoriesTab();
+        } else {
+          const err = await res.json();
+          showToast(err.error || "Creation failed", true);
+        }
+      } catch (e) {
+        showToast("Network error", true);
+      }
+    }
+
+    // Explorer functions
+    function selectEndpoint(method, path, desc, body = '') {
+      activeMethod = method;
+      activePath = path;
+      activeBody = body;
+
+      document.querySelectorAll('.endpoint-card').forEach(c => c.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      document.getElementById('console-endpoint-title').textContent = `${method} ${path}`;
+      const bodySec = document.getElementById('request-body-section');
+      if (['POST', 'PUT', 'PATCH'].includes(method)) {
+        bodySec.style.display = 'block';
+        document.getElementById('explorer-req-body').value = body;
+      } else {
+        bodySec.style.display = 'none';
+      }
+
+      executeExplorerRequest();
+    }
+
+    async function executeExplorerRequest() {
+      const output = document.getElementById('console-output');
+      const statusBadge = document.getElementById('response-status-badge');
+      const timeBadge = document.getElementById('response-time');
+      output.textContent = '// Sending request...';
+
+      const start = performance.now();
+      try {
+        const opts = { method: activeMethod };
+        if (['POST', 'PUT', 'PATCH'].includes(activeMethod)) {
+          opts.headers = { 'Content-Type': 'application/json' };
+          opts.body = document.getElementById('explorer-req-body').value;
+        }
+
+        const res = await fetch(activePath, opts);
+        const data = await res.json();
+        const duration = Math.round(performance.now() - start);
+
+        statusBadge.textContent = `${res.status} ${res.statusText || 'OK'}`;
+        statusBadge.style.color = res.ok ? 'var(--accent-green)' : 'var(--accent-red)';
+        timeBadge.textContent = `(${duration}ms)`;
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        output.textContent = `Error: ${e.message}`;
+        statusBadge.textContent = 'Error';
+        statusBadge.style.color = 'var(--accent-red)';
+      }
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // Startup
+    init();
+  </script>
+</body>
+</html>

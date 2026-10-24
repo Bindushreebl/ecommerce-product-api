@@ -3,7 +3,7 @@ E-commerce Product REST API
 A robust RESTful API built with Flask, SQLite, and Flasgger (OpenAPI/Swagger).
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flasgger import Swagger
 from database import init_db, get_connection
 
@@ -414,11 +414,17 @@ def handle_internal_server_error(error):
 
 @app.route("/", methods=["GET"])
 def home():
+    # If opened directly in a browser (HTML requested and not JSON):
+    accept = request.headers.get("Accept", "")
+    if "text/html" in accept and "application/json" not in accept and not request.args.get("json"):
+        return render_template("index.html")
+
     return jsonify({
         "name": "E-commerce Product REST API",
         "version": "1.0.0",
         "description": "RESTful API for managing products and categories with SQLite database storage.",
         "documentation": "/apidocs/",
+        "dashboard": "/dashboard",
         "health": "/api/health",
         "endpoints": {
             "products": {
@@ -431,6 +437,12 @@ def home():
             }
         }
     }), 200
+
+
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
+    return render_template("index.html")
+
 
 
 @app.route("/api/health", methods=["GET"])
